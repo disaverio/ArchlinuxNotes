@@ -15,7 +15,12 @@ Install `sudo` to the system, and grant new user adding `username ALL=(ALL) ALL`
 
 ##### 3. SSH (<https://wiki.archlinux.org/index.php/OpenSSH>)
 
-Install `openssh` and enable root user to login (**DON'T DO THAT!**) checking those lines in `/etc/ssh/sshd_config` are not commented:
+- install `openssh` and enable service:
+```
+# systemctl enable sshd.service
+```
+
+- enable root user to login (**DON'T DO THAT!**) granting those lines in `/etc/ssh/sshd_config` are not commented:
 ```
 PermitRootLogin yes
 PasswordAuthentication yes
@@ -43,10 +48,7 @@ CXXFLAGSCXXFLAGS="${CFLAGS}"
 
 ##### 5. GNOME Desktop Environment (<https://wiki.archlinux.org/index.php/GNOME>)
 
-- install `gnome`. It includes `gdm`, so enable it:
-```
-# systemctl enable gdm.service
-```
+- install `gnome`, and enable the display manager service `gdm.service`
 
 - install `gnome-tweaks` for advanced settings, and `gnome-shell-extension-multi-monitors-add-on-git` (from `AUR`) for advanced multi-monitor support
 

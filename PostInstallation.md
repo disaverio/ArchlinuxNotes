@@ -1,4 +1,4 @@
-# Reccomended steps for a minimal fresh archlinux installation
+# Reccomended post installation steps
 
 **1.** Add non-priviliged user for daily use and set password:
 ```

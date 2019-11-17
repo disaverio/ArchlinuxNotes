@@ -1,6 +1,8 @@
 # Reccomended post installation steps
 
-**1.** Add non-priviliged user for daily use and set password:
+##### 1. Users (<https://wiki.archlinux.org/index.php/users_and_groups>)
+
+Add non-priviliged user for daily use and set password:
 ```
 # useradd -m username
 # passwd username
@@ -60,3 +62,50 @@ $ gsettings set org.gnome.mutter experimental-features "['scale-monitor-framebuf
 - to enable network management from GNOME control panel install `networkmanager` and enable the service `NetworkManager.service`
 
 - as above, for bluetooth, install `bluez` and `bluez-utils`, and then enable the service `bluetooth.service`
+
+##### 6. Automatic backup with `rsync` (<https://wiki.archlinux.org/index.php/Rsync>) and timers (<https://wiki.archlinux.org/index.php/Systemd/Timers>)
+
+- `sync.sh` bash script for **differential** backup with `rsync`:
+```
+ #!/bin/sh
+
+logFile="log_"`date +%Y%m%d%H%M%S`".log"
+
+echo "Start on "`date` >> $logFile
+
+rsync -avzh --delete \
+	/path/to/source \
+	/path/to/destination \
+	>> $logFile
+
+echo "End on "`date` >> $logFile
+```
+
+- `/etc/systemd/system/data-backup.service`:
+```
+[Unit]
+Description=Trigger rsync script to backup data
+
+[Service]
+Type=oneshot
+User=andrea
+ExecStart=/bin/bash /path/to/sync.sh
+
+[Install]
+WantedBy=multi-user.target
+```
+
+- setup a timer creating `/etc/systemd/system/data-backup.timer`:
+```
+[Unit]
+Description=Do backup on boot, then once a day
+
+[Timer]
+OnBootSec=15min
+OnUnitActiveSec=24h 
+
+[Install]
+WantedBy=timers.target
+```
+
+- enable the service `data-backup.timer`

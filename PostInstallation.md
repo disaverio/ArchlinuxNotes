@@ -1,4 +1,4 @@
-# Reccomended post installation steps
+# Post installation steps
 
 ##### 1. Users (<https://wiki.archlinux.org/index.php/users_and_groups>)
 
@@ -67,7 +67,7 @@ $ gsettings set org.gnome.mutter experimental-features "['scale-monitor-framebuf
 
 - `sync.sh` bash script for **differential** backup with `rsync`:
 ```
- #!/bin/sh
+#!/bin/sh
 
 logFile="log_"`date +%Y%m%d%H%M%S`".log"
 

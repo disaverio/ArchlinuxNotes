@@ -68,9 +68,9 @@ Prepare USB installation media as UEFI bootable. **Replace `/dev/SDX` with corre
 
 ##### 5. Partition the disk. (<https://wiki.archlinux.org/index.php/GPT_fdisk>)
 
-In this scenario all the data on the disk will be destroyed, a new GUID partition table (GPT) will be created (removing an eventual old MBT partition table), and two partition will be created: a 512MB EFI partition (mandatory) and a Linux one for the system
+In this scenario all the data on the disk will be destroyed, a new GUID partition table (GPT) will be created (removing an old MBT partition table if exists), and two partitions will be created: a 512MB EFI partition (mandatory) and a Linux one for the system
 
-- list all disks to identify the correct device
+- list all the disks to identify the correct device
 ```
 # fdisk -l
 ```
@@ -81,8 +81,11 @@ In this scenario all the data on the disk will be destroyed, a new GUID partitio
 ```
 
 - crete a new empty GUID partition table entering `o`
+
 - create new EFI partition entering `n`. *Notes*: default as first sector, +512M as last sector, **`ef00` as partition hex code**
+
 - create new Linux partition for the system entering `n` again. *Notes*: default as first sector, default as last sector (the whole disk), default as partition hex code (`8300`)
+
 - save and exit entering `w`
 
 ##### 6. Format the partitions
@@ -91,6 +94,7 @@ In this scenario all the data on the disk will be destroyed, a new GUID partitio
 ```
 # mkfs.fat -F32 /dev/SDX1
 ```
+
 - format the Linux partition (let's say number 2) **Replace `/dev/SDX2` with correct value**:
 ```
 # mkfs.ext4 /dev/SDX2
@@ -145,6 +149,7 @@ In this scenario all the data on the disk will be destroyed, a new GUID partitio
 ```
 # locale-gen
 ```
+
 - set the language and terminal keyboard layout:
 ```
 # echo LANG=en_US.UTF-8 > /etc/locale.conf

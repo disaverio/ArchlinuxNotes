@@ -109,3 +109,28 @@ WantedBy=timers.target
 ```
 
 - enable the service `data-backup.timer`
+
+##### 7. Nvidia GPU configuration (<https://wiki.archlinux.org/index.php/NVIDIA>)
+
+- disable `Wayland` uncommenting `#WaylandEnable=false` line in `/etc/gdm/custom.conf`
+```
+[daemon]
+WaylandEnable=false
+```
+
+- install nvidia drivers
+```
+# pacman -S nvidia
+```
+
+- disable intel (because of double video cards) and nouveau modules:
+```
+# echo install i915 /usr/bin/false >> /etc/modprobe.d/blacklist.conf
+# echo install intel_agp /usr/bin/false >> /etc/modprobe.d/blacklist.conf
+# echo blacklist nouveau > /etc/modprobe.d/nonouveau.conf
+```
+
+- test hw acceleration for HEVC:
+```
+$ mpv --hwdec=nvdec --vo=gpu path/to/video
+```

@@ -77,6 +77,12 @@ $ chmod +x ~/.xprofile
 
 - as above, for bluetooth, install `bluez` and `bluez-utils`, and then enable the service `bluetooth.service`
 
+- in case of multiple monitors, if gdm login screen starts on secondary monitory copy monitor configuration to gdm, and make it readable to gdm user:
+```
+$ sudo cp -f ~/.config/monitors.xml ~gdm/.config/monitors.xml
+# chown $(id -u gdm):$(id -g gdm) ~gdm/.config/monitors.xml
+```
+
 ##### 6. Automatic backup with `rsync` (<https://wiki.archlinux.org/index.php/Rsync>) and timers (<https://wiki.archlinux.org/index.php/Systemd/Timers>)
 
 - `sync.sh` bash script for **differential** backup with `rsync`:

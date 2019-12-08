@@ -54,9 +54,22 @@ CXXFLAGSCXXFLAGS="${CFLAGS}"
 
 - install `gnome-tweaks` for advanced settings, and `gnome-shell-extension-multi-monitors-add-on-git` (from `AUR`) for advanced multi-monitor support
 
-- enable fractional re-scaling for huge resolutions:
+- enable fractional re-scaling for [huge resolutions](https://wiki.archlinux.org/index.php/HiDPI) (**in Wayland**):
 ```
 $ gsettings set org.gnome.mutter experimental-features "['scale-monitor-framebuffer']"
+```
+
+- enable fractional re-scaling for [huge resolutions](https://wiki.archlinux.org/index.php/HiDPI) (**in XORG**):
+install `xrandr`, then double the re-scaling value, then set correct values for two monitors:
+```
+$ gsettings set org.gnome.settings-daemon.plugins.xsettings overrides "[{'Gdk/WindowScalingFactor', <2>}]"
+$ gsettings set org.gnome.desktop.interface scaling-factor 2
+$ /usr/bin/xrandr --output DVI-D-0 --scale 2x2 --pos 0x100 --output DP-0 --scale 1.5x1.5 --pos 3840x0
+```
+to keep changes after reboot:
+```
+$ echo "/usr/bin/xrandr --output DVI-D-0 --scale 2x2 --pos 0x100 --output DP-0 --scale 1.5x1.5 --pos 3840x0" >> ~/.xprofile
+$ chmod +x ~/.xprofile
 ```
 
 - to enable network management from GNOME control panel install `networkmanager` and enable the service `NetworkManager.service`

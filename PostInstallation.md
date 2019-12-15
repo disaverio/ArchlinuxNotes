@@ -150,12 +150,28 @@ WaylandEnable=false
 # echo blacklist nouveau > /etc/modprobe.d/nonouveau.conf
 ```
 
-- test hw acceleration for HEVC:
+##### 8. Hardware video acceleration (<https://wiki.archlinux.org/index.php/Hardware_video_acceleration>)
+
+- Since `nvidia` drivers are installed, hw video acceleration should already be working on NVDECODE/NVENCODE backend. test it for HEVC:
 ```
 $ mpv --hwdec=nvdec --vo=gpu path/to/video
 ```
 
-##### 8. Others
+Not every software is able to leverage NVDECODE/NVENCODE so:
+
+- enable VDPAU installing (if not yet installed by `nvidia` as dependency) `libvdpau` and `vdpauinfo` packages, and check it running `vdpauinfo`
+
+- enable VA-API support installing `libva` and `libva-vdpau-driver` packages. Then check it's working running `vainfo` (provided by `libva-utils` package). VA-API uses VDPAU as backend in nvidia environments.
+
+- to have chromium with hw video acceleration install `libva-vdpau-driver-chromium` (it will remove `libva-vdpau-driver` because conflicting) and `chromium-vaapi-bin` (chomium patched to support vaapi). then enable flags with:
+```
+$ echo --ignore-gpu-blacklist > ~/.config/chromium-flags.conf
+$ echo --enable-gpu-rasterization >> ~/.config/chromium-flags.conf
+$ echo --enable-native-gpu-memory-buffers >> ~/.config/chromium-flags.conf
+$ echo --enable-zero-copy >> ~/.config/chromium-flags.conf
+```
+
+##### 9. Others
 
 Gists:
 - [.bashrc for customized prompt with time and colored git](https://gist.github.com/disaverio/dd6929cb1ae5873dcf5675ee83311451)

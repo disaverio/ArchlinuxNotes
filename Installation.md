@@ -80,7 +80,7 @@ In this scenario all the data on the disk will be destroyed, a new GUID partitio
 # gdisk /dev/SDX
 ```
 
-- crete a new empty GUID partition table entering `o`
+- create a new empty GUID partition table entering `o`
 
 - create new EFI partition entering `n`. *Notes*: default as first sector, +512M as last sector, **`ef00` as partition hex code**
 

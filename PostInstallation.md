@@ -38,7 +38,7 @@ PasswordAuthentication yes
 - adjust `/etc/makepkg.conf` to optimize your compilation process. Set:
 ```
 CFLAGS="-march=native -O2 -pipe -fno-plt"
-CXXFLAGSCXXFLAGS="${CFLAGS}"
+CXXFLAGS="${CFLAGS}"
 ```
 
 - since `make` uses `MAKEFLAGS` env var, we can set there the number of jobs to run simultaneously. Add `export MAKEFLAGS="-j$(nproc)"` to `/etc/profile` <-- if some build fails it could be because of race conditions. Remove it.

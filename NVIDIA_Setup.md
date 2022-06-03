@@ -18,7 +18,7 @@ $ lspci -k | grep -A 3 -E "(VGA|3D)"
 
 **2.** Enable DRM [KMS](https://wiki.archlinux.org/title/Kernel_mode_setting), by adding `nvidia-drm.modeset=1` [kernel parameter](https://wiki.archlinux.org/title/Kernel_parameters):
 
-- edit `/etc/default/grub` and the `nvidia-drm.modeset=1` option between the quotes in the `GRUB_CMDLINE_LINUX_DEFAULT` line. Result:
+- edit `/etc/default/grub` and add the `nvidia-drm.modeset=1` option between the quotes in the `GRUB_CMDLINE_LINUX_DEFAULT` line. Result:
 ```
 $ cat /etc/default/grub | grep GRUB_CMDLINE_LINUX_DEFAULT
 GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet nvidia-drm.modeset=1"
@@ -31,7 +31,7 @@ GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet nvidia-drm.modeset=1"
 
 - result:
 ```
-$ cat /proc/
+$ cat /proc/cmdline
 BOOT_IMAGE=/vmlinuz-linux root=UUID=... rw loglevel=3 quiet nvidia-drm.modeset=1
 ```
 
@@ -44,7 +44,7 @@ BOOT_IMAGE=/vmlinuz-linux root=UUID=... rw loglevel=3 quiet nvidia-drm.modeset=1
 # mkinitcpio -P
 ```
 
-- To avoid the possibility of forgetting to update initramfs after an NVIDIA driver upgrade, you may want to use a pacman hook by creating the file `/etc/pacman.d/hooks/nvidia.hook`:
+- to avoid forgetting to update initramfs after an NVIDIA driver upgrade, do setup a pacman hook by creating the file `/etc/pacman.d/hooks/nvidia.hook`:
 ```
 [Trigger]
 Operation=Install

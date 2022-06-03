@@ -151,10 +151,9 @@ fi
 **7.4** Tuning
 - uncomment `Color` in `/etc/pacman.conf`
 - increase the value of `ParallelDownloads` in `/etc/pacman.conf`
-- after first reboot, set the correct kayboard layout in Gnome settings
+- after first reboot, set the correct keyboard layout in Gnome settings
 
 ##### 9. Gists
 
-Gists:
 - [.bashrc for customized prompt with time and colored git](https://gist.github.com/disaverio/dd6929cb1ae5873dcf5675ee83311451)
 - [cutomized behaviour for Alt+Tab scoped to current workspace](https://gist.github.com/disaverio/4e53806a736764bcd571fca7643e4c34)

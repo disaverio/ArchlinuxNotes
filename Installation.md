@@ -16,7 +16,7 @@ Prepare USB installation media as UEFI bootable. **Replace `/dev/SDX` with corre
 
 **2.** Eventually set the AHCI mode and turn of Secure Boot.
 
-**2.** Eventually prepare the disk by reserving space for the installation (if the installation has to be done in an already existing Windows setup, otherwise ignore this point).
+**3.** Eventually prepare the disk by reserving space for the installation (if the installation has to be done in an already existing Windows setup, otherwise ignore this point).
 
 ## Prepare the system
 

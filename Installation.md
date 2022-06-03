@@ -3,18 +3,20 @@
 
 ## Before starting
 
-Download .iso and .sig from <https://www.archlinux.org/download/>
+**1.** Download .iso and .sig from <https://www.archlinux.org/download/>
 
 Verify signature:
 ```
 $ gpg --keyserver-options auto-key-retrieve --verify archlinux-version-x86_64.iso.sig
 ```
-
 Prepare USB installation media as UEFI bootable. **Replace `/dev/SDX` with correct value**:
 ```
 # dd bs=4M if=path/to/archlinux.iso of=/dev/SDX status=progress oflag=sync
 ```
 
+**2.** Eventually set the AHCI mode and turn of Secure Boot.
+
+**2.** Eventually prepare the disk by reserving space for the installation (if the installation has to be done in an already existing Windows setup, otherwise ignore this point).
 
 ## Prepare the system
 
@@ -27,38 +29,32 @@ Prepare USB installation media as UEFI bootable. **Replace `/dev/SDX` with corre
 
 ##### 3. Connect to internet via WiFi (<https://wiki.archlinux.org/index.php/Network_configuration/Wireless>)
 
-- check your wifi card is recognized, it should be listed by:
+- check if your wifi card is recognized, it should be listed by:
 ```
 # ip link
 ```
-
 - enable iwd service:
 ```
 # systemctl start iwd.service
 ```
-
 - run it in interactive mode:
 ```
 # iwctl
 ```
-
 - then list again your devices to get your wifi device name (e.g. `wlan0`), scan for networks, and list them:
 ```
 [iwd]# device list
 [iwd]# station wlan0 scan
 [iwd]# station wlan0 get-networks
 ```
-
 - finally connect to the network (you will be prompted for a passphrase):
 ```
 [iwd]# station wlan0 connect SSID
 ```
-
 - CTRL+D to leave `iwd`, and get addresses via dhcp:
 ```
 # dhcpcd wlan0
 ```
-
 - check it pinging something
 
 **4.** Update system clock:
@@ -68,24 +64,27 @@ Prepare USB installation media as UEFI bootable. **Replace `/dev/SDX` with corre
 
 ##### 5. Partition the disk. (<https://wiki.archlinux.org/index.php/GPT_fdisk>)
 
-In this scenario all the data on the disk will be destroyed, a new GUID partition table (GPT) will be created (removing an old MBT partition table if exists), and two partitions will be created: a 512MB EFI partition (mandatory) and a Linux one for the system
-
-- list all the disks to identify the correct device
+- list all the disks to identify the correct device:
 ```
 # fdisk -l
 ```
-
 - run `gdisk` on such device, to enter interactive mode. **Replace `/dev/SDX` with correct value**:
 ```
 # gdisk /dev/SDX
 ```
 
-- create a new empty GUID partition table entering `o`
+Now two possible scenarios are the most common use cases:
 
-- create new EFI partition entering `n`. *Notes*: default as first sector, +512M as last sector, **`ef00` as partition hex code**
+**5.1.** Wipe the whole disk: all the data will be destroyed, a new GUID partition table (GPT) will be created (removing an old MBT partition table if exists), and two partitions will be created: a 512MB EFI partition (mandatory) and a Linux one for the system:
 
-- create new Linux partition for the system entering `n` again. *Notes*: default as first sector, default as last sector (the whole disk), default as partition hex code (`8300`)
+- create a new empty GUID partition table by entering `o`
+- create new EFI partition by entering `n`. *Notes*: default as first sector, +512M as last sector, **`ef00` as partition hex code**
+- create new Linux partition for the system by entering `n` again. *Notes*: default as first sector, default as last sector (the whole disk), default as partition hex code (`8300`)
+- save and exit entering `w`
 
+**5.2.** Installation in an already existing Windows setup: no need for a EFI partition:
+
+- create new Linux partition for the system by entering `n` again. *Notes*: default as first sector, default as last sector (the whole disk), default as partition hex code (`8300`)
 - save and exit entering `w`
 
 ##### 6. Format the partitions
@@ -94,7 +93,6 @@ In this scenario all the data on the disk will be destroyed, a new GUID partitio
 ```
 # mkfs.fat -F32 /dev/SDX1
 ```
-
 - format the Linux partition (let's say number 2) **Replace `/dev/SDX2` with correct value**:
 ```
 # mkfs.ext4 /dev/SDX2
@@ -106,23 +104,25 @@ In this scenario all the data on the disk will be destroyed, a new GUID partitio
 ```
 # mount /dev/sdX2 /mnt
 ```
-
 - create `/boot` folder to mount the EFI partition:
 ```
 # mkdir /mnt/boot
 ```
-
 - mount EFI partition:
 ```
 # mount /dev/sdX1 /mnt/boot
 ```
-
+- if the EFI partition's size is not big enough, let's say less than 256MB, do not use the `boot` folder. Create a `efi` folder instead, and mount it there. In this way future kernel updates will not consume the little EFI partition' space:
+```
+# mkdir /mnt/efi
+# mount /dev/sdX1 /mnt/efi
+```
 
 ## Installation
 
 **1.** Select mirrors: move the best entries on top of the list `/etc/pacman.d/mirrorlist` (most likely the best ones are the ones from your country)
 
-**2.** Install base system with network utilities, and text editor:
+**2.** Install base system along with network utilities, and text editor:
 ```
 # pacstrap /mnt base linux linux-firmware iwd dhcpcd nano
 ```
@@ -149,7 +149,6 @@ In this scenario all the data on the disk will be destroyed, a new GUID partitio
 ```
 # locale-gen
 ```
-
 - set the language and terminal keyboard layout:
 ```
 # echo LANG=en_US.UTF-8 > /etc/locale.conf
@@ -175,12 +174,10 @@ In this scenario all the data on the disk will be destroyed, a new GUID partitio
 ```
 # pacman -S grub efibootmgr
 ```
-
-- install grub in the disk. **Replace ESP with mount point of efi partition. In this guide `/boot`**:
+- install grub in the disk. **Replace ESP with mount point of efi partition. In this guide `/boot` (or `/efi`, it depends on what you did on point #5)**:
 ```
 # grub-install --target=x86_64-efi --efi-directory=ESP --bootloader-id=GRUB
 ```
-
 - generate configuration file
 ```
 # grub-mkconfig -o /boot/grub/grub.cfg
@@ -190,7 +187,7 @@ In this scenario all the data on the disk will be destroyed, a new GUID partitio
 
 Enable if your cpu is affected (e.g.it is if Haswell, Broadwell among others): <https://en.wikipedia.org/wiki/Transactional_Synchronization_Extensions>
 
-Install `intel-ucode` and then update GRUB to early load microcode, before initramfs stage:
+Install `intel-ucode` (or the `amd` version) and then update GRUB to early load microcode, before initramfs stage:
 ```
 # grub-mkconfig -o /boot/grub/grub.cfg
 ```

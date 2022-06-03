@@ -10,39 +10,37 @@ Add non-priviliged user for daily use and set password:
 
 ##### 2. SUDO (<https://wiki.archlinux.org/index.php/Sudo>)
 
-Install `sudo` to the system, and grant new user adding `username ALL=(ALL) ALL` to conf file:
+Install `sudo` to the system, and grant new user by adding `username ALL=(ALL) ALL` to conf file:
 ```
 # EDITOR=nano visudo
 ```
+Also remove password waiting timeout by adding `Defaults passwd_timeout=0`
 
 ##### 3. SSH (<https://wiki.archlinux.org/index.php/OpenSSH>)
 
-- install `openssh` and enable service:
+- to continue installation process from another system, install `openssh` and start the service:
 ```
-# systemctl enable sshd.service
+# systemctl start sshd.service
 ```
-
-- enable root user to login (**DON'T DO THAT!**) granting those lines in `/etc/ssh/sshd_config` are not commented:
+- enable root user to login by uncommenting those lines in `/etc/ssh/sshd_config`:
 ```
 PermitRootLogin yes
 PasswordAuthentication yes
 ```
+- don't forget to remove above lines when completed
 
 ##### 4. AUR (<https://wiki.archlinux.org/index.php/Arch_User_Repository>)
 
-- install needed for building your own packages
+- install the needed packages to build your owns:
 ```
 # pacman -S --needed base-devel
 ```
-
 - adjust `/etc/makepkg.conf` to optimize your compilation process. Set:
 ```
 CFLAGS="-march=native -O2 -pipe -fno-plt"
 CXXFLAGS="${CFLAGS}"
 ```
-
 - since `make` uses `MAKEFLAGS` env var, we can set there the number of jobs to run simultaneously. Add `export MAKEFLAGS="-j$(nproc)"` to `/etc/profile` <-- if some build fails it could be because of race conditions. Remove it.
-
 - install `yay` as `AUR` helper: [download snapshot from AUR](https://aur.archlinux.org/packages/yay), extract it, `cd` in folder and:
 ```
 # makepkg -si 
@@ -51,37 +49,34 @@ CXXFLAGS="${CFLAGS}"
 ##### 5. GNOME Desktop Environment (<https://wiki.archlinux.org/index.php/GNOME>)
 
 - install `gnome`, and enable the display manager service `gdm.service`
-
-- install `gnome-tweaks` for advanced settings, and `gnome-shell-extension-multi-monitors-add-on-git` (from `AUR`) for advanced multi-monitor support
-
-- enable fractional re-scaling for [huge resolutions](https://wiki.archlinux.org/index.php/HiDPI) (**in Wayland**):
-```
-$ gsettings set org.gnome.mutter experimental-features "['scale-monitor-framebuffer']"
-```
-
-- enable fractional re-scaling for [huge resolutions](https://wiki.archlinux.org/index.php/HiDPI) (**in XORG**):
-
-install `xrandr`, then double the re-scaling value, then set correct values for two monitors:
-```
-$ gsettings set org.gnome.settings-daemon.plugins.xsettings overrides "[{'Gdk/WindowScalingFactor', <2>}]"
-$ gsettings set org.gnome.desktop.interface scaling-factor 2
-$ xrandr --output DVI-D-0 --scale 2x2 --pos 0x100 --output DP-0 --scale 1.5x1.5 --pos 3840x0
-```
-to keep changes after reboot:
-```
-$ echo "/usr/bin/xrandr --output DVI-D-0 --scale 2x2 --pos 0x100 --output DP-0 --scale 1.5x1.5 --pos 3840x0" >> ~/.xprofile
-$ chmod +x ~/.xprofile
-```
-
-- to enable network management from GNOME control panel install `networkmanager` and enable the service `NetworkManager.service`
-
-- as above, for bluetooth, install `bluez` and `bluez-utils`, and then enable the service `bluetooth.service`
-
-- in case of multiple monitors, if gdm login screen starts on secondary monitory copy monitor configuration to gdm, and make it readable to gdm user:
+- install `gnome-tweaks` for advanced settings
+- install `gnome-shell-extension-unite` to customize gnome
+- to enable network management from GNOME control panel install `networkmanager`, `openvpn`, `networkmanager-openvpn` and enable the service `NetworkManager.service`
+- to enable bluetooth, install `bluez` and `bluez-utils`, enable the service `bluetooth.service`, and uncomment the line `AutoEnable=true` in `/etc/bluetooth/main.conf`
+- in case of multiple monitors, if gdm login screen starts on secondary monitory, copy monitor configuration to gdm, and make it readable to gdm user:
 ```
 $ sudo cp -f ~/.config/monitors.xml ~gdm/.config/monitors.xml
 # chown $(id -u gdm):$(id -g gdm) ~gdm/.config/monitors.xml
 ```
+
+In case of monitor with [hi resolutions](https://wiki.archlinux.org/index.php/HiDPI) (>=4k) you may need fractional rescaling:
+
+- enable it in Wayland:
+```
+$ gsettings set org.gnome.mutter experimental-features "['scale-monitor-framebuffer']"
+```
+- enable it in Xorg:
+  - install `xrandr`, then double the re-scaling value, then set correct values for two monitors:
+  ```
+  $ gsettings set org.gnome.settings-daemon.plugins.xsettings overrides "[{'Gdk/WindowScalingFactor', <2>}]"
+  $ gsettings set org.gnome.desktop.interface scaling-factor 2
+  $ xrandr --output DVI-D-0 --scale 2x2 --pos 0x100 --output DP-0 --scale 1.5x1.5 --pos 3840x0
+  ```
+  - to keep changes after reboot:
+  ```
+  $ echo "/usr/bin/xrandr --output DVI-D-0 --scale 2x2 --pos 0x100 --output DP-0 --scale 1.5x1.5 --pos 3840x0" >> ~/.xprofile
+  $ chmod +x ~/.xprofile
+  ```
 
 ##### 6. Automatic backup with `rsync` (<https://wiki.archlinux.org/index.php/Rsync>) and timers (<https://wiki.archlinux.org/index.php/Systemd/Timers>)
 
@@ -100,8 +95,7 @@ rsync -avzh --delete \
 
 echo "End on "`date` >> $logFile
 ```
-
-- `/etc/systemd/system/data-backup.service`:
+- create the service `/etc/systemd/system/data-backup.service`:
 ```
 [Unit]
 Description=Trigger rsync script to backup data
@@ -114,8 +108,7 @@ ExecStart=/bin/bash /path/to/sync.sh
 [Install]
 WantedBy=multi-user.target
 ```
-
-- setup a timer creating `/etc/systemd/system/data-backup.timer`:
+- setup a timer by creating `/etc/systemd/system/data-backup.timer`:
 ```
 [Unit]
 Description=Do backup on boot, then once a day
@@ -127,51 +120,40 @@ OnUnitActiveSec=24h
 [Install]
 WantedBy=timers.target
 ```
-
 - enable the service `data-backup.timer`
 
-##### 7. Nvidia GPU configuration (<https://wiki.archlinux.org/index.php/NVIDIA>)
+##### 7. Packages & Utils
 
-- disable `Wayland` uncommenting `#WaylandEnable=false` line in `/etc/gdm/custom.conf`
-```
-[daemon]
-WaylandEnable=false
-```
+**7.1** Bash
+- install `bash-completion`, `pkgfile`
+- bootstrap `pkgfile` database by launching `pkgfile -u` as root
+- enable service `pkgfile-update.timer` to keep database updated
+- add `source /usr/share/doc/pkgfile/command-not-found.bash` to `~/.bashrc`
+- in `~/.bashrc` customize `PS1` with `PS1="[\t] \u@\H:\w \$ "`
 
-- install nvidia drivers
+**7.2** Git
+- install `git`, `bash-git-prompt`
+- add `source /usr/share/git/completion/git-prompt.sh` to `~/.bashrc`
+- in the home, create symlink to installed script by doing `ln -s /usr/lib/bash-git-prompt .bash-git-prompt`
+- enable it by adding to `~/.bashrc`:
 ```
-# pacman -S nvidia
-```
-
-- disable intel (because of double video cards) and nouveau modules:
-```
-# echo install i915 /usr/bin/false >> /etc/modprobe.d/blacklist.conf
-# echo install intel_agp /usr/bin/false >> /etc/modprobe.d/blacklist.conf
-# echo blacklist nouveau > /etc/modprobe.d/nonouveau.conf
-```
-
-##### 8. Hardware video acceleration (<https://wiki.archlinux.org/index.php/Hardware_video_acceleration>)
-
-- Since `nvidia` drivers are installed, hw video acceleration should already be working on NVDECODE/NVENCODE backend. test it for HEVC:
-```
-$ mpv --hwdec=nvdec --vo=gpu path/to/video
+if [ -f "$HOME/.bash-git-prompt/gitprompt.sh" ]; then
+    GIT_PROMPT_ONLY_IN_REPO=1
+    GIT_PROMPT_THEME=Single_line_Minimalist
+    source $HOME/.bash-git-prompt/gitprompt.sh
+fi
 ```
 
-Not every software is able to leverage NVDECODE/NVENCODE so:
+**7.3** Other packages:
+- `gparted`, `jdk-openjdk`, `chromium`, `firefox`, `filezilla`, `libreoffice-fresh`, `meld`, `maven`, `docker`, `docker-compose`
+- enable `docker.service` and add user to the `docker` group by doing `gpasswd -a username docker`
 
-- enable VDPAU installing (if not yet installed by `nvidia` as dependency) `libvdpau` and `vdpauinfo` packages, and check it running `vdpauinfo`
+**7.4** Tuning
+- uncomment `Color` in `/etc/pacman.conf`
+- increase the value of `ParallelDownloads` in `/etc/pacman.conf`
+- after first reboot, set the correct kayboard layout in Gnome settings
 
-- enable VA-API support installing `libva` and `libva-vdpau-driver` packages. Then check it's working running `vainfo` (provided by `libva-utils` package). VA-API uses VDPAU as backend in nvidia environments.
-
-- to have chromium with hw video acceleration install `libva-vdpau-driver-chromium` (it will remove `libva-vdpau-driver` because conflicting) and `chromium-vaapi-bin` (chomium patched to support vaapi). then enable flags with:
-```
-$ echo --ignore-gpu-blacklist > ~/.config/chromium-flags.conf
-$ echo --enable-gpu-rasterization >> ~/.config/chromium-flags.conf
-$ echo --enable-native-gpu-memory-buffers >> ~/.config/chromium-flags.conf
-$ echo --enable-zero-copy >> ~/.config/chromium-flags.conf
-```
-
-##### 9. Others
+##### 9. Gists
 
 Gists:
 - [.bashrc for customized prompt with time and colored git](https://gist.github.com/disaverio/dd6929cb1ae5873dcf5675ee83311451)

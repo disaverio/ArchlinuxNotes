@@ -8,7 +8,7 @@ Add non-priviliged user for daily use and set password:
 # passwd username
 ```
 
-##### 2. SUDO (<https://wiki.archlinux.org/index.php/Sudo>)
+##### 2. Sudo (<https://wiki.archlinux.org/index.php/Sudo>)
 
 Install `sudo` to the system, and grant new user by adding `username ALL=(ALL) ALL` to conf file:
 ```
@@ -78,7 +78,48 @@ $ gsettings set org.gnome.mutter experimental-features "['scale-monitor-framebuf
   $ chmod +x ~/.xprofile
   ```
 
-##### 6. Automatic backup with `rsync` (<https://wiki.archlinux.org/index.php/Rsync>) and timers (<https://wiki.archlinux.org/index.php/Systemd/Timers>)
+##### 6. Bash improvements
+
+- customize `PS1` by setting `PS1="[\t] \u@\H:\w \$ "` in `~/.bashrc`
+- install `bash-completion`
+- install `pkgfile` and bootstrap his database by launching `pkgfile -u` as root
+```
+# pkgfile -u
+```
+- enable service `pkgfile-update.timer` to keep database updated
+- add `source /usr/share/doc/pkgfile/command-not-found.bash` to `~/.bashrc`
+
+##### 7. Git 
+
+- install `git`
+- add `source /usr/share/git/completion/git-prompt.sh` to `~/.bashrc`
+- install `bash-git-prompt` and create symlink to installed scripts:
+```
+$ ln -s /usr/lib/bash-git-prompt ~/.bash-git-prompt
+```
+- pick a theme from the output of command `git_prompt_list_themes` and enable it by adding to `~/.bashrc`:
+```
+if [ -f "$HOME/.bash-git-prompt/gitprompt.sh" ]; then
+    GIT_PROMPT_ONLY_IN_REPO=1
+    GIT_PROMPT_SHOW_UPSTREAM=1
+    GIT_PROMPT_THEME=Custom
+    source $HOME/.bash-git-prompt/gitprompt.sh
+fi
+```
+- to use a custom theme, do generate the `~/.git-prompt-colors.sh` file by doing the command `git_prompt_make_custom_theme`, and then customize it
+
+##### 8. Pacman
+
+- uncomment `Color` in `/etc/pacman.conf`
+- increase the value of `ParallelDownloads` in `/etc/pacman.conf`
+
+##### 9. Docker
+
+- install `docker`, `docker-compose`
+- add your user `username` to the `docker` group by doing `gpasswd -a username docker`
+- enable `docker.service`
+
+##### 10. Automatic backup with `rsync` (<https://wiki.archlinux.org/index.php/Rsync>) and timers (<https://wiki.archlinux.org/index.php/Systemd/Timers>)
 
 - `sync.sh` bash script for **differential** backup with `rsync`:
 ```
@@ -122,38 +163,7 @@ WantedBy=timers.target
 ```
 - enable the service `data-backup.timer`
 
-##### 7. Packages & Utils
+##### 11. Gists
 
-**7.1** Bash
-- install `bash-completion`, `pkgfile`
-- bootstrap `pkgfile` database by launching `pkgfile -u` as root
-- enable service `pkgfile-update.timer` to keep database updated
-- add `source /usr/share/doc/pkgfile/command-not-found.bash` to `~/.bashrc`
-- in `~/.bashrc` customize `PS1` with `PS1="[\t] \u@\H:\w \$ "`
-
-**7.2** Git
-- install `git`, `bash-git-prompt`
-- add `source /usr/share/git/completion/git-prompt.sh` to `~/.bashrc`
-- in the home, create symlink to installed script by doing `ln -s /usr/lib/bash-git-prompt .bash-git-prompt`
-- enable it by adding to `~/.bashrc`:
-```
-if [ -f "$HOME/.bash-git-prompt/gitprompt.sh" ]; then
-    GIT_PROMPT_ONLY_IN_REPO=1
-    GIT_PROMPT_THEME=Single_line_Minimalist
-    source $HOME/.bash-git-prompt/gitprompt.sh
-fi
-```
-
-**7.3** Other packages:
-- `gparted`, `jdk-openjdk`, `chromium`, `firefox`, `filezilla`, `libreoffice-fresh`, `meld`, `maven`, `docker`, `docker-compose`
-- enable `docker.service` and add user to the `docker` group by doing `gpasswd -a username docker`
-
-**7.4** Tuning
-- uncomment `Color` in `/etc/pacman.conf`
-- increase the value of `ParallelDownloads` in `/etc/pacman.conf`
-- after first reboot, set the correct keyboard layout in Gnome settings
-
-##### 9. Gists
-
-- [.bashrc for customized prompt with time and colored git](https://gist.github.com/disaverio/dd6929cb1ae5873dcf5675ee83311451)
+- [.bashrc for customized prompt with time and colored git](https://gist.github.com/disaverio/dd6929cb1ae5873dcf5675ee83311451) (as alternative to the `bash-git-prompt` previously described)
 - [cutomized behaviour for Alt+Tab scoped to current workspace](https://gist.github.com/disaverio/4e53806a736764bcd571fca7643e4c34)
